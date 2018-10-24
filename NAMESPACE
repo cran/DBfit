@@ -1,0 +1,13 @@
+exportPattern("^[[:alpha:]]+")
+import(
+  Rfit
+)
+importFrom("stats", "lm", "model.frame", "model.matrix",
+             "model.response", "pf", "printCoefmat", "pt", "qnorm", "qt",
+             "quantile", "rnorm", "sd", "var")
+importFrom("utils", "head", "tail")
+S3method(dbfit, default)
+S3method(dbfit, formula)
+S3method(print, dbfit)
+S3method(print, summary.dbfit)
+S3method(summary, dbfit)
