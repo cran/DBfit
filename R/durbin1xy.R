@@ -9,13 +9,13 @@ function(y,x,arp){
 
       s1 <- arp + 1
       s2 <- n
-      part2 <- lagx(x[,2:p],s1,s2)
+      part2 <- lagx(as.matrix(x[,2:p]),s1,s2)
       allx <- cbind(part1,part2)
 
       for(j in 1:arp){
          s1 <- s1 -1
          s2 <- s2 -1
-         part3 <- lagx(x[,2:p],s1,s2)
+         part3 <- lagx(as.matrix(x[,2:p]),s1,s2)
          allx <- cbind(allx,part3)
       }
 

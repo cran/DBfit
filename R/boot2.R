@@ -17,7 +17,7 @@ function(y,xcopy,phi1,beta,nbs,method,scores=scores){
       n1 <- n - arp
       ones <- rep(1,n)
       proj1 <- ones%*%t(ones)/n
-      x2 <- xcopy[,2:p]
+      x2 <- as.matrix(xcopy[,2:p])
       xbar <- apply(x2,2,mean)
       xc <- xcopy[,2:p] - proj1%*%xcopy[,2:p]
       x <- xc

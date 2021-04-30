@@ -28,9 +28,9 @@ additional arguments to be passed
 }
 }
 \examples{
-data(testdata)
-y<-testdata[,5]
-x<-testdata[,1:4]
-fit1<-dbfit(x,y,1) # OLS fit, default
-summary(fit1)
+# data(testdata)
+# y<-testdata[,5]
+# x<-testdata[,1:4]
+# fit1<-dbfit(x,y,1) # OLS fit, default
+# summary(fit1)
 }

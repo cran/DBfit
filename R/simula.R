@@ -14,7 +14,7 @@ function(x,y,arp,nbs,nbscov, conf, method,scores=scores) {
     
     ones <- rep(1,n)
     proj1 <- ones %*% t(ones) / n
-    x2 <- x[,2:p]
+    x2 <- as.matrix(x[,2:p])
     xbar <- apply(x2,2,mean)
     xc <- x[,2:p] - proj1 %*% x[,2:p]
     x <- xc
@@ -118,11 +118,12 @@ function(x,y,arp,nbs,nbscov, conf, method,scores=scores) {
     pvals <- 2 * (1 - pt(abs(tees),df))
     tabbeta <- cbind(allb,sesbeta,tees,pvals)
     colnames(tabbeta) <- c("beta","SE","t-ratio","p-value")
-    rname <- c()
-    for (j in 1:p) {
-      rname <- c(rname,paste("beta_",j))
+    if (is.null(colnames(xcopy))) {
+      rownames(tabbeta) <- c("Intercept",paste('beta', seq(1:p), sep = ""))
+    } else {
+      rownames(tabbeta) = colnames(xcopy)
     }
-    rownames(tabbeta) <- c("Intercept",rname)
+    
     
     ### .99 flag ###
     flag99 <- 0
@@ -133,8 +134,18 @@ function(x,y,arp,nbs,nbscov, conf, method,scores=scores) {
     
     rhostar <- bscov$rhostar
     rhobias <- adjar - rho1
-    k.multi <- (colMeans(rhostar) + rhobias) / colMeans(rhostar)
-    # k.multi <- (rho1 + rhobias) / rho1
+    
+    k.multi = rep(NA, arp)
+    tmp_rho = colMeans(rhostar)
+    
+    for (i in 1:arp) {
+      if (abs(tmp_rho[i]) > 0.05) {
+        k.multi[i] <- 1 + rhobias[i] / tmp_rho[i]
+      } else {
+        k.multi[i] <- 1 + rhobias[i] / (0.05 * sign(tmp_rho[i])) # to avoid dividing by 0
+      }
+    }
+    
     rhostar2 = t(t(rhostar) + rhobias)
     rhostar <- t(t(rhostar) * k.multi) # multiply each row of rhostar matrix by the vector k.multi
     MSEstar <- bscov$MSEstar
@@ -166,18 +177,25 @@ function(x,y,arp,nbs,nbscov, conf, method,scores=scores) {
     }
     rhocov2 <- rhocov2 * mse / nbscov
     serho2 <- diag(rhocov2) ^ (1 / 2)
-    rho_CI_2 <- rbind(adjar - qt((1-conf)/2, df) * serho2, adjar + qt(1-(1-conf)/2, df) * serho2)
+    rho_CI_2 <- rbind(adjar - qt(1-(1-conf)/2, df) * serho2, adjar + qt(1-(1-conf)/2, df) * serho2)
     # ### (c) ###
     rho_CI_3 <- apply(rhostar2, 2, quantile, probs = c((1-conf)/2,1-(1-conf)/2))
-    if (arp == 1){
-      names(rho_CI_1) = c('LB','UB')
-      names(rho_CI_2) = c('LB','UB')
-      names(rho_CI_3) = c('LB','UB')
-    } else {
-      colnames(rho_CI_1) = c('LB','UB')
-      colnames(rho_CI_2) = c('LB','UB')
-      colnames(rho_CI_3) = c('LB','UB')
-    }
+    
+    rownames(rho_CI_1) = c('LB','UB')
+    rownames(rho_CI_2) = c('LB','UB')
+    rownames(rho_CI_3) = c('LB','UB')
+    colnames(rho_CI_1) = paste('rho', seq(1:arp), sep = "")
+    colnames(rho_CI_2) = paste('rho', seq(1:arp), sep = "")
+    colnames(rho_CI_3) = paste('rho', seq(1:arp), sep = "")
+    
+    rho_CI_1[1,][rho_CI_1[1,] < -1] = -1
+    rho_CI_1[2,][rho_CI_1[2,] > 1] = 1
+    
+    rho_CI_2[1,][rho_CI_2[1,] < -1] = -1
+    rho_CI_2[2,][rho_CI_2[2,] > 1] = 1
+    
+    rho_CI_3[1,][rho_CI_3[1,] < -1] = -1
+    rho_CI_3[2,][rho_CI_3[2,] > 1] = 1
     
     ### residuals and fitted.values
     ypart <- nurho(y, adjar)

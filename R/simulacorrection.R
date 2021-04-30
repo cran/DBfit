@@ -14,7 +14,7 @@ function(x,y,arp,nbs,nbscov,method,scores) {
     
     ones <- rep(1,n)
     proj1 <- ones %*% t(ones) / n
-    x2 <- x[,2:p]
+    x2 <- as.matrix(x[,2:p])
     xbar <- apply(x2,2,mean)
     xc <- x[,2:p] - proj1 %*% x[,2:p]
     x <- xc
@@ -111,11 +111,13 @@ function(x,y,arp,nbs,nbscov,method,scores) {
     pvals <- 2 * (1 - pt(abs(tees), df))
     tabbeta <- cbind(allb, sesbeta, tees, pvals)
     colnames(tabbeta) <- c("beta","SE","t-ratio","p-value")
-    rname <- c()
-    for (j in 1:p) {
-      rname <- c(rname, paste("beta_", j))
+    
+    if (is.null(colnames(xcopy))) {
+      rownames(tabbeta) <- c("Intercept",paste('beta', seq(1:p), sep = ""))
+    } else {
+      rownames(tabbeta) = colnames(xcopy)
     }
-    rownames(tabbeta) <- c("Intercept", rname)
+    
     flag99 <- 1
     
     ypart <- nurho(y, adjar)
